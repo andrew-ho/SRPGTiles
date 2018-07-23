@@ -11,7 +11,6 @@ public class TacticMovement : MonoBehaviour {
     public Stack<Tile> path = new Stack<Tile>();
     Tile currentTile;
 
-    public Animator animator;
     public bool action = false;
     public Vector3 currentPos;
 
@@ -44,6 +43,8 @@ public class TacticMovement : MonoBehaviour {
         FINDINGPATH,
         MOVING,
         WAIT,
+        SKILLS,
+        ITEMS,
         ATTACKING
     };
 
@@ -55,7 +56,36 @@ public class TacticMovement : MonoBehaviour {
         halfHeight = GetComponent<Collider>().bounds.extents.y;
         //TurnManager.AddUnit(this);
     }
-
+    public static GameObject checkForPlayer(GameObject target, float jumpHeight)
+    {
+        Vector3 halfExtents = new Vector3(0.25f, (1 + jumpHeight) / 2.0f, 0.25f);
+        List<Collider[]> list = new List<Collider[]>();
+        list.Add(Physics.OverlapBox(target.transform.position + Vector3.right, halfExtents));
+        list.Add(Physics.OverlapBox(target.transform.position + -Vector3.right, halfExtents));
+        list.Add(Physics.OverlapBox(target.transform.position + Vector3.forward, halfExtents));
+        list.Add(Physics.OverlapBox(target.transform.position + -Vector3.forward, halfExtents));
+        foreach (Collider[] collider in list)
+        {
+            foreach (Collider col in collider)
+            {
+                if (TurnManager.myState == TurnManager.states.ENEMY)
+                {
+                    if (col.tag == "Player")
+                    {
+                        return col.gameObject;
+                    }
+                }
+                else if ((TurnManager.myState == TurnManager.states.PLAYER))
+                {
+                    if (col.tag == "Enemy")
+                    {
+                        return col.gameObject;
+                    }
+                }
+            }
+        }
+        return null;
+    }
     public void GetCurrentTile()
     {
         currentTile = GetTargetTile(gameObject);
@@ -189,24 +219,7 @@ public class TacticMovement : MonoBehaviour {
             RemoveAttTiles();
             moving = false;
             state = turnState.WAIT;
-            //state = turnState.MOVING;
-            animator.SetBool("isOpen", true);
             currentTile = null;
-            //TurnManager.done = true;
-            //this.GetComponent<Renderer>().material.color = Color.red;
-            //TurnManager.EndTurn();
-            if (TurnManager.myState == TurnManager.states.PLAYER)
-            {
-                //this.EndTurn();
-                //state = turnState.WAIT;
-                //animator.SetBool("isOpen", false);
-                //TurnManager.heroes.Remove(this.gameObject);
-            }
-            if (TurnManager.myState == TurnManager.states.ENEMY)
-            {
-                //this.EndTurn();
-                //TurnManager.enemies.Remove(this.gameObject);
-            }
         }
     }
     //reset tiles meant for attacking

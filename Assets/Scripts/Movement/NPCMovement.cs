@@ -85,20 +85,28 @@ public class NPCMovement : TacticMovement {
             }
             if (state == turnState.WAIT)
             {
-                gameObject.GetComponent<TacticMovement>().EndTurn();
                 //TurnManager.enemies.Remove(gameObject);
-                gameObject.GetComponent<TacticMovement>().hadTurn = true;
-                state = turnState.CHECKSTATE;
+                checkAttack();
             }
         }
     }
 
     void checkAttack()
     {
-        Vector3 halfExtents = new Vector3(0.25f, (1 + jumpHeight) / 2.0f, 0.25f);
-        Collider[] colliders = Physics.OverlapBox(target.transform.position + Vector3.right, halfExtents);
-
-
+        GameObject target = TacticMovement.checkForPlayer(this.gameObject, 0);
+        if (target == null)
+        {
+            gameObject.GetComponent<TacticMovement>().hadTurn = true;
+            state = turnState.CHECKSTATE;
+        }
+        else
+        {
+            this.gameObject.transform.LookAt(target.transform);
+            target.GetComponent<BaseStats>().HP -= this.gameObject.GetComponent<EnemyStats>().att;
+            gameObject.GetComponent<TacticMovement>().hadTurn = true;
+            gameObject.GetComponent<TacticMovement>().EndTurn();
+            state = turnState.CHECKSTATE;
+        }
     }
     void CalculatePath()
     {

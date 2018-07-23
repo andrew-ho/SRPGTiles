@@ -97,6 +97,18 @@ public class PlayerMovement : TacticMovement {
                         gameObject.GetComponent<TacticMovement>().EndTurn();
                         state = turnState.SELECTING;
                     }
+                    else if (Input.GetKeyDown("z"))
+                    {
+                        foreach (Tile t in TacticMovement.selectTiles)
+                        {
+                            t.Reset();
+                        }
+                        foreach (Tile t in TacticMovement.attTiles)
+                        {
+                            t.Reset();
+                        }
+                        state = turnState.WAIT;
+                    }
                     else
                     {
                         FindSelectableTiles();
@@ -114,8 +126,11 @@ public class PlayerMovement : TacticMovement {
             }
             else if (state == turnState.ATTACKING)
             {
-
                 PlayerTurnAttacking();
+            }
+            else if (state == turnState.SKILLS)
+            {
+
             }
         }
 	}
@@ -157,7 +172,6 @@ public class PlayerMovement : TacticMovement {
         if (Input.GetKeyDown("x"))
         {
             this.gameObject.transform.position = currentPos;
-            animator.SetBool("isOpen", false);
             this.gameObject.GetComponent<TacticMovement>().EndTurn();
             state = turnState.SELECTING;
             currentPlayer = null;
@@ -182,19 +196,15 @@ public class PlayerMovement : TacticMovement {
 
             if (Physics.Raycast(ray, out hit))
             {
-                //Debug.Log(hit.collider.gameObject.name);
                 if (hit.collider.tag == "Enemy" && hit.collider.gameObject.GetComponent<EnemyStats>().hittable)
                 {
                     AttackScript attk = currentPlayer.GetComponent<AttackScript>();
                     EnemyStats enemyHP = hit.collider.gameObject.GetComponent<EnemyStats>();
-                    //Debug.Log("ally attack " + attk);
-                    //Debug.Log("enemy stats " + enemyHP);
                     attk.Attack(enemyHP);
-                    //TurnManager.heroes.Remove(currentPlayer);
                     currentPlayer.GetComponent<TacticMovement>().hadTurn = true;
-                    //currentPlayer.GetComponent<Renderer>().material.color = Color.red;
                     gameObject.GetComponent<Renderer>().material.color = Color.red;
                     currentPlayer.GetComponent<TacticMovement>().EndTurn();
+                    hit.collider.gameObject.GetComponent<EnemyStats>().hittable = false;
                     currentPlayer = null;
                     foreach (Tile t in Tile.newTiles)
                     {
@@ -206,6 +216,7 @@ public class PlayerMovement : TacticMovement {
             }
         }
     }
+
     void checkMouse()
     {
         if (Input.GetMouseButtonUp(0))
