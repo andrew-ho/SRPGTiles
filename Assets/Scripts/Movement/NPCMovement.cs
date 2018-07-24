@@ -97,6 +97,7 @@ public class NPCMovement : TacticMovement {
         if (target == null)
         {
             gameObject.GetComponent<TacticMovement>().hadTurn = true;
+            gameObject.GetComponent<TacticMovement>().EndTurn();
             state = turnState.CHECKSTATE;
         }
         else

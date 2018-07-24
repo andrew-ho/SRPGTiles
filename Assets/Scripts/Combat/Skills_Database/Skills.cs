@@ -41,11 +41,37 @@ public class Skills : MonoBehaviour {
     //ALice Skills
     public void Heal()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.tag == "Player")
+                {
+                    hit.collider.gameObject.GetComponent<BaseStats>().HP += 100;
+                }
+            }
+        }
     }
 
     public void Fire()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.tag == "Enemy")
+                {
+                    hit.collider.gameObject.GetComponent<BaseStats>().HP -= 100;
+                }
+            }
+        }
     }
 }
