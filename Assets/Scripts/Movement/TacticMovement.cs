@@ -6,7 +6,7 @@ public class TacticMovement : MonoBehaviour {
     public bool turn = false;
     public static List<Tile> selectTiles = new List<Tile>();
     public static List<Tile> attTiles = new List<Tile>();
-    GameObject[] tiles;
+    public static GameObject[] tiles;
 
     public Stack<Tile> path = new Stack<Tile>();
     Tile currentTile;
@@ -68,6 +68,11 @@ public class TacticMovement : MonoBehaviour {
         {
             foreach (Collider col in collider)
             {
+                Tile tile = col.gameObject.GetComponent<Tile>();
+                if (tile != null)
+                {
+                    tile.GetComponent<Renderer>().material.color = Color.black;
+                }
                 if (TurnManager.myState == TurnManager.states.ENEMY)
                 {
                     if (col.tag == "Player")
@@ -110,6 +115,41 @@ public class TacticMovement : MonoBehaviour {
         {
             Tile t = tile.GetComponent<Tile>();
             t.findNeighbor(jumpHeight, target);
+        }
+    }
+    public void FindAttTiles(int range)
+    {
+        ComputeAdjList(jumpHeight, null);
+        GetCurrentTile();
+        Queue<Tile> process = new Queue<Tile>();
+        process.Enqueue(currentTile);
+        while (process.Count > 0)
+        {
+            Tile t = process.Dequeue();
+            t.attackable = true;
+            if (t.distance <= range)
+            {
+                Vector3 halfExtents = new Vector3(0.25f, (1 + jumpHeight) / 2.0f, 0.25f);
+                Collider[] colliders = Physics.OverlapBox(t.transform.position, halfExtents);
+                foreach (Collider col in colliders)
+                {
+                    if (col.tag == "Enemy")
+                    {
+                        col.gameObject.GetComponent<EnemyStats>().hittable = true;
+                    }
+                }
+            }
+
+            if (t.distance < range)
+            {
+                //t.attackable = true;
+                foreach (Tile tile in t.adjList)
+                {
+                    tile.parent = t;
+                    tile.distance = 1 + t.distance;
+                    process.Enqueue(tile);
+                }
+            }
         }
     }
 

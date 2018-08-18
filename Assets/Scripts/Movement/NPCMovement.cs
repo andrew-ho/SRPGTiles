@@ -17,14 +17,6 @@ public class NPCMovement : TacticMovement {
         {
             if (state == turnState.INITIALIZING)
             {
-                /*if (TurnManager.enemies.Count == 0)
-                {
-                    TurnManager.myState = TurnManager.states.PLAYER;
-                }
-                else
-                {
-                    state = turnState.SELECTING;
-                }*/
                 foreach (GameObject enemy in TurnManager.enemies)
                 {
                     enemy.GetComponent<TacticMovement>().hadTurn = false;

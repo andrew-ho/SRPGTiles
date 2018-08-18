@@ -9,6 +9,7 @@ public class Tile : MonoBehaviour {
     public bool walkable = true;
     public bool attSpace = false;
     public bool nonSelect = true;
+    public bool attackable = false;
 
     public List<Tile> adjList = new List<Tile>();
     public static List<Tile> newTiles = new List<Tile>();
@@ -42,6 +43,10 @@ public class Tile : MonoBehaviour {
         {
             GetComponent<Renderer>().material.color = Color.yellow;
         }
+        else if (attackable)
+        {
+            GetComponent<Renderer>().material.color = Color.black;
+        }
         else if (nonSelect)
         {
             GetComponent<Renderer>().material.color = Color.white;
@@ -59,6 +64,7 @@ public class Tile : MonoBehaviour {
         distance = 0;
         attSpace = false;
         nonSelect = true;
+        attackable = false;
         f = g = h = 0;
     }
 
@@ -81,13 +87,26 @@ public class Tile : MonoBehaviour {
         foreach (Collider item in colliders)
         {
             Tile tile = item.GetComponent<Tile>();
-            if (tile != null && tile.walkable)
+            RaycastHit hit;
+            if (TacticMovement.state == TacticMovement.turnState.SKILLS)
             {
-                RaycastHit hit;
 
-                if (!Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1) || (tile == target))
+                if (tile != null)
                 {
-                    adjList.Add(tile);
+                    if (!Physics.Raycast(tile.transform.position, -Vector3.up, out hit, 1) || (tile == target))
+                    {
+                        adjList.Add(tile);
+                    }
+                }
+            }
+            else
+            {
+                if (tile != null)
+                {
+                    if (!Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1) || (tile == target))
+                    {
+                        adjList.Add(tile);
+                    }
                 }
             }
         }

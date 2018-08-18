@@ -1,75 +1,63 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class PlayerMovement : TacticMovement {
 
+    public Animator MenuAnimator;
+    public Animator SkillsAnimator;
     // Use this for initialization
     void Start () {
         init();
 	}
-	
-	// Update is called once per frame
-	void FixedUpdate () {
+
+    void Initialize()
+    {
+        foreach (GameObject hero in TurnManager.heroes)
+        {
+            if (hero.GetComponent<TacticMovement>().alive == true)
+            {
+                hero.GetComponent<TacticMovement>().hadTurn = false;
+                hero.GetComponent<Renderer>().material.color = Color.white;
+            }
+        }
+        state = turnState.SELECTING;
+    }
+
+    void CheckState()
+    {
+        int count = 0;
+        foreach (GameObject hero in TurnManager.heroes)
+        {
+            if (hero.GetComponent<TacticMovement>().hadTurn == true)
+            {
+                count++;
+            }
+        }
+        if (count == TurnManager.heroes.Count)
+        {
+            state = turnState.INITIALIZING;
+            TurnManager.myState = TurnManager.states.ENEMY;
+        }
+        else
+        {
+            state = turnState.SELECTING;
+        }
+    }
+    // Update is called once per frame
+    void FixedUpdate () {
         Debug.Log(TurnManager.myState + " " + state);
-        //Debug.Log(currentPlayer);
-        //Debug.Log("current gameObject 2" + gameObject);
         if (TurnManager.myState == TurnManager.states.PLAYER)
         {
             if (state == turnState.INITIALIZING)
             {
-                foreach (GameObject hero in TurnManager.heroes)
-                {
-                    if (hero.GetComponent<TacticMovement>().alive == true)
-                    {
-                        hero.GetComponent<TacticMovement>().hadTurn = false;
-                        hero.GetComponent<Renderer>().material.color = Color.white;
-                    }
-                }
-                state = turnState.SELECTING;
-                //state = turnState.SELECTING;
-                /*if (TurnManager.heroes.Count == 0)
-                {
-                    TurnManager.myState = TurnManager.states.ENEMY;
-                }
-                else
-                {
-                    state = turnState.SELECTING;
-                }*/
-                //foreach (GameObject hero in TurnManager.heroes)
-                //{
-                    //Debug.Log("hadTurn " + hero.GetComponent<TacticMovement>().hadTurn);
-                    /*if (hero.GetComponent<TacticMovement>().hadTurn == false)
-                    {
-                        state = turnState.SELECTING;
-                        break;
-                    }
-                    else
-                    {
-                        TurnManager.myState = TurnManager.states.ENEMY;
-                    }*/
-                //}
-
+                Initialize();
             }
             if (state == turnState.CHECKSTATE)
             {
-                int count = 0;
-                foreach (GameObject hero in TurnManager.heroes)
-                {
-                    if (hero.GetComponent<TacticMovement>().hadTurn == true)
-                    {
-                        count++;
-                    }
-                }
-                if (count == TurnManager.heroes.Count)
-                {
-                    state = turnState.INITIALIZING;
-                    TurnManager.myState = TurnManager.states.ENEMY;
-                }
-                else
-                {
-                    state = turnState.SELECTING;
-                }
+                CheckState();
             }
             if (state == TacticMovement.turnState.SELECTING)
             {
@@ -85,28 +73,14 @@ public class PlayerMovement : TacticMovement {
                 {
                     if (Input.GetKeyDown("x"))
                     {
-                        foreach (Tile t in TacticMovement.selectTiles)
-                        {
-                            t.Reset();
-                        }
-                        foreach (Tile t in TacticMovement.attTiles)
-                        {
-                            t.Reset();
-                        }
+                        ResetTiles();
                         currentPlayer = null;
                         gameObject.GetComponent<TacticMovement>().EndTurn();
                         state = turnState.SELECTING;
                     }
                     else if (Input.GetKeyDown("z"))
                     {
-                        foreach (Tile t in TacticMovement.selectTiles)
-                        {
-                            t.Reset();
-                        }
-                        foreach (Tile t in TacticMovement.attTiles)
-                        {
-                            t.Reset();
-                        }
+                        ResetTiles();
                         state = turnState.WAIT;
                     }
                     else
@@ -130,10 +104,47 @@ public class PlayerMovement : TacticMovement {
             }
             else if (state == turnState.SKILLS)
             {
-
+                //Code to be place in a MonoBehaviour with a GraphicRaycaster component
+                //GraphicRaycaster gr = this.GetComponent<GraphicRaycaster>();
+                //Create the PointerEventData with null for the EventSystem
+                //PointerEventData ped = new PointerEventData(null);
+                //Set required parameters, in this case, mouse position
+                //ped.position = Input.mousePosition;
+                //Create list to receive all results
+                //List<RaycastResult> results = new List<RaycastResult>();
+                //Raycast it
+                //gr.Raycast(ped, results);
+                /*if (Input.GetMouseButtonUp(0))
+                {
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (hit.collider.tag == "Enemy" && hit.collider.gameObject.GetComponent<EnemyStats>().hittable)
+                        {
+                            //typeof(Skills).GetMethod(ButtonSkillScript.currentSkill).Invoke(GameObject.Find("skillsDatabase").GetComponent<Skills>(), null);
+                        }
+                    }
+                }*/
+                if (ButtonSkillScript.currentSkill != null)
+                {
+                    typeof(Skills).GetMethod(ButtonSkillScript.currentSkill).Invoke(GameObject.Find("skillsDatabase").GetComponent<Skills>(), null);
+                }
             }
         }
 	}
+
+    void ResetTiles()
+    {
+        foreach (Tile t in TacticMovement.selectTiles)
+        {
+            t.Reset();
+        }
+        foreach (Tile t in TacticMovement.attTiles)
+        {
+            t.Reset();
+        }
+    }
 
     void PlayerTurnMoving()
     {

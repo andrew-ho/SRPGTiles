@@ -5,19 +5,29 @@ using UnityEngine.UI;
 
 public class ButtonManager : MonoBehaviour {
     //Make sure to attach these Buttons in the Inspector
-    public Button attack_button, wait_button, skill_button, items_button;
+    [Header("Menu Buttons")]
+    public Button attack_button;
+    public Button wait_button, skill_button, items_button;
+    [Header("Lena Buttons")]
+    public Button Slash;
+    public Button CrossSlash;
     public Animator animator;
+    public Animator skillsAnimator;
     void Start()
     {
         Button btn1 = attack_button.GetComponent<Button>();
         Button btn2 = wait_button.GetComponent<Button>();
         Button btn3 = skill_button.GetComponent<Button>();
         Button btn4 = items_button.GetComponent<Button>();
+        Button btn5 = Slash.GetComponent<Button>();
+        Button btn6 = CrossSlash.GetComponent<Button>();
         //Calls the TaskOnClick/TaskWithParameters method when you click the Button
         btn1.onClick.AddListener(TaskOnClick);
         btn2.onClick.AddListener(WaitAction);
         btn3.onClick.AddListener(OpenSkillsList);
         btn4.onClick.AddListener(null);
+
+        btn5.onClick.AddListener(() => Skill(btn5));
 
     }
     private void Update()
@@ -35,6 +45,11 @@ public class ButtonManager : MonoBehaviour {
                 animator.SetBool("Close", true);
             }
         }
+    }
+
+    void Skill(Button button)
+    {
+        button.GetComponent<SkillUse>().Use();
     }
     void TaskOnClick()
     {
@@ -63,7 +78,8 @@ public class ButtonManager : MonoBehaviour {
     }
     void OpenSkillsList()
     {
-
+        TacticMovement.state = TacticMovement.turnState.SKILLS;
+        skillsAnimator.SetBool("SkillsOpen", true);
     }
 
     void TaskWithParameters(string message)
