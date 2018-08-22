@@ -4,14 +4,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PlayerMovement : TacticMovement {
+public class PlayerMovement : TacticMovement
+{
 
-    public Animator MenuAnimator;
-    public Animator SkillsAnimator;
+    public Animator aliceAnimator;
+    public Animator lenaAnimator;
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         init();
-	}
+    }
 
     void Initialize()
     {
@@ -47,8 +49,34 @@ public class PlayerMovement : TacticMovement {
         }
     }
     // Update is called once per frame
-    void FixedUpdate () {
+    public void AnimationUpdates()
+    {
+        /*if (state == turnState.MOVING && TacticMovement.currentPlayer.name == "Alice")
+        {
+            aliceAnimator.SetBool("isMoving", true);
+        }
+        else
+        {
+            aliceAnimator.SetBool("isMoving", false);
+        }
+        if (state == turnState.MOVING && TacticMovement.currentPlayer.name == "Lena")
+        {
+            lenaAnimator.SetBool("isLenaMoving", true);
+        }
+        else
+        {
+            lenaAnimator.SetBool("isLenaMoving", false);
+        }*/
+    }
+    void FixedUpdate()
+    {
         Debug.Log(TurnManager.myState + " " + state);
+        AnimationUpdates();
+        PlayerStages();
+    }
+
+    public void PlayerStages()
+    {
         if (TurnManager.myState == TurnManager.states.PLAYER)
         {
             if (state == turnState.INITIALIZING)
@@ -104,35 +132,14 @@ public class PlayerMovement : TacticMovement {
             }
             else if (state == turnState.SKILLS)
             {
-                //Code to be place in a MonoBehaviour with a GraphicRaycaster component
-                //GraphicRaycaster gr = this.GetComponent<GraphicRaycaster>();
-                //Create the PointerEventData with null for the EventSystem
-                //PointerEventData ped = new PointerEventData(null);
-                //Set required parameters, in this case, mouse position
-                //ped.position = Input.mousePosition;
-                //Create list to receive all results
-                //List<RaycastResult> results = new List<RaycastResult>();
-                //Raycast it
-                //gr.Raycast(ped, results);
-                /*if (Input.GetMouseButtonUp(0))
-                {
-                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    RaycastHit hit;
-                    if (Physics.Raycast(ray, out hit))
-                    {
-                        if (hit.collider.tag == "Enemy" && hit.collider.gameObject.GetComponent<EnemyStats>().hittable)
-                        {
-                            //typeof(Skills).GetMethod(ButtonSkillScript.currentSkill).Invoke(GameObject.Find("skillsDatabase").GetComponent<Skills>(), null);
-                        }
-                    }
-                }*/
                 if (ButtonSkillScript.currentSkill != null)
                 {
-                    typeof(Skills).GetMethod(ButtonSkillScript.currentSkill).Invoke(GameObject.Find("skillsDatabase").GetComponent<Skills>(), null);
+                    //typeof(Skills).GetMethod(ButtonSkillScript.currentSkill).Invoke(GameObject.Find("skillsDatabase").GetComponent<Skills>(), null);
+                    Skills.dict[ButtonSkillScript.currentSkill]();
                 }
             }
         }
-	}
+    }
 
     void ResetTiles()
     {
@@ -149,33 +156,33 @@ public class PlayerMovement : TacticMovement {
     void PlayerTurnMoving()
     {
 
-            if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                RaycastHit hit;
-
-                if (Physics.Raycast(ray, out hit))
+                if (hit.collider.tag == "Player")
                 {
-                    if (hit.collider.tag == "Player")
+                    if (PlayerMovement.currentPlayer == null)
                     {
-                        if (PlayerMovement.currentPlayer == null)
+                        if (PlayerMovement.state == TacticMovement.turnState.SELECTING)
                         {
-                            if (PlayerMovement.state == TacticMovement.turnState.SELECTING)
+                            if (TurnManager.heroes.Contains(hit.collider.gameObject) && hit.collider.gameObject.GetComponent<TacticMovement>().hadTurn == false)
                             {
-                                if (TurnManager.heroes.Contains(hit.collider.gameObject) && hit.collider.gameObject.GetComponent<TacticMovement>().hadTurn == false)
-                                {
-                                    PlayerMovement.currentPlayer = hit.collider.gameObject;
+                                PlayerMovement.currentPlayer = hit.collider.gameObject;
 
-                                    hit.collider.gameObject.GetComponent<TacticMovement>().BeginTurn();
-                                    state = TacticMovement.turnState.FINDINGPATH;
-                                }
+                                hit.collider.gameObject.GetComponent<TacticMovement>().BeginTurn();
+                                state = TacticMovement.turnState.FINDINGPATH;
                             }
                         }
                     }
                 }
             }
-        
+        }
+
     }
 
     void PlayerTurnWaiting()
@@ -193,7 +200,7 @@ public class PlayerMovement : TacticMovement {
     {
         if (Input.GetKeyDown("x"))
         {
-            foreach (Tile t in Tile.newTiles)
+            foreach (Tile t in TacticMovement.attTiles)
             {
                 t.Reset();
             }
@@ -209,19 +216,16 @@ public class PlayerMovement : TacticMovement {
             {
                 if (hit.collider.tag == "Enemy" && hit.collider.gameObject.GetComponent<EnemyStats>().hittable)
                 {
-                    AttackScript attk = currentPlayer.GetComponent<AttackScript>();
-                    EnemyStats enemyHP = hit.collider.gameObject.GetComponent<EnemyStats>();
-                    attk.Attack(enemyHP);
+                    currentPlayer.GetComponent<AttackScript>().Attack(hit.collider.gameObject.GetComponent<EnemyStats>());
                     currentPlayer.GetComponent<TacticMovement>().hadTurn = true;
                     gameObject.GetComponent<Renderer>().material.color = Color.red;
                     currentPlayer.GetComponent<TacticMovement>().EndTurn();
                     hit.collider.gameObject.GetComponent<EnemyStats>().hittable = false;
                     currentPlayer = null;
-                    foreach (Tile t in Tile.newTiles)
+                    foreach (Tile t in TacticMovement.attTiles)
                     {
                         t.Reset();
                     }
-                    Debug.Log(hit.collider.gameObject.GetComponent<EnemyStats>().HP);
                     state = turnState.CHECKSTATE;
                 }
             }

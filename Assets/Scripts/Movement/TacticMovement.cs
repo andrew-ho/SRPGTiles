@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TacticMovement : MonoBehaviour {
+public class TacticMovement : MonoBehaviour
+{
+
+    public Tile lastTile = null;
+
     public bool turn = false;
     public static List<Tile> selectTiles = new List<Tile>();
     public static List<Tile> attTiles = new List<Tile>();
@@ -20,7 +24,7 @@ public class TacticMovement : MonoBehaviour {
     public int attRange = 1;
 
     public bool moving = false;
-    public int move = 5;
+    public int move;
     public float jumpHeight = 2;
     public float moveSpeed = 2;
     Vector3 velocity = new Vector3();
@@ -91,11 +95,12 @@ public class TacticMovement : MonoBehaviour {
         }
         return null;
     }
-    public void GetCurrentTile()
+    public Tile GetCurrentTile()
     {
         currentTile = GetTargetTile(gameObject);
         currentTile.current = true;
         currentPos = transform.localPosition;
+        return currentTile;
     }
 
     public Tile GetTargetTile(GameObject target)
@@ -127,6 +132,7 @@ public class TacticMovement : MonoBehaviour {
         {
             Tile t = process.Dequeue();
             t.attackable = true;
+            attTiles.Add(t);
             if (t.distance <= range)
             {
                 Vector3 halfExtents = new Vector3(0.25f, (1 + jumpHeight) / 2.0f, 0.25f);
@@ -153,6 +159,37 @@ public class TacticMovement : MonoBehaviour {
         }
     }
 
+    public void ComputeTilesLine(int range)
+    {
+        Tile t = GetCurrentTile();
+        t.attackable = true;
+        for (int i = 0; i < range; i++)
+        {
+            t = t.checkTileLine(t, 0, -Vector3.right);
+            if (t != null)
+            {
+                lastTile = t;
+            }
+            if (t != null)
+            {
+                t.attackable = true;
+                Vector3 halfExtents = new Vector3(0.25f, (1 + jumpHeight) / 2.0f, 0.25f);
+                Collider[] colliders = Physics.OverlapBox(t.transform.position, halfExtents);
+                foreach (Collider col in colliders)
+                {
+                    if (col.tag == "Enemy")
+                    {
+                        col.gameObject.GetComponent<EnemyStats>().hittable = true;
+                    }
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+
     public void FindSelectableTiles()
     {
         ComputeAdjList(jumpHeight, null);
@@ -167,7 +204,7 @@ public class TacticMovement : MonoBehaviour {
         {
             Tile t = process.Dequeue();
             selectTiles.Add(t);
-                
+
             t.selectable = true;
             if (t.distance == move)
             {
@@ -186,7 +223,7 @@ public class TacticMovement : MonoBehaviour {
                         tile.distance = 1 + t.distance;
                         process.Enqueue(tile);
                     }
-                }                
+                }
             }
         }
         //Debug.Log(attT.Count);
@@ -232,7 +269,7 @@ public class TacticMovement : MonoBehaviour {
 
             if (Vector3.Distance(transform.position, target) >= .05f)
             {
-                bool jump = transform.position.y != target.y;
+                bool jump = transform.position.y >= target.y + .5f;
 
                 if (jump)
                 {
@@ -265,7 +302,7 @@ public class TacticMovement : MonoBehaviour {
     //reset tiles meant for attacking
     public void RemoveAttTiles()
     {
-        foreach(Tile tile in attTiles)
+        foreach (Tile tile in attTiles)
         {
             tile.Reset();
         }
@@ -279,7 +316,7 @@ public class TacticMovement : MonoBehaviour {
             currentTile.current = false;
             currentTile = null;
         }
-        foreach(Tile tile in selectTiles)
+        foreach (Tile tile in selectTiles)
         {
             tile.Reset();
         }

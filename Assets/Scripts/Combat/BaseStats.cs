@@ -9,6 +9,7 @@ public abstract class BaseStats : MonoBehaviour {
     public int TP;
     public int att;
     public int def;
+    public int move;
 
     public void setHP(int damage)
     {

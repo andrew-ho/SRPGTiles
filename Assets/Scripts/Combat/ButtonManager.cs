@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ButtonManager : MonoBehaviour {
+public class ButtonManager : MonoBehaviour
+{
     //Make sure to attach these Buttons in the Inspector
     [Header("Menu Buttons")]
     public Button attack_button;
@@ -28,7 +29,7 @@ public class ButtonManager : MonoBehaviour {
         btn4.onClick.AddListener(null);
 
         btn5.onClick.AddListener(() => Skill(btn5));
-
+        btn6.onClick.AddListener(() => Skill(btn6));
     }
     private void Update()
     {
@@ -36,45 +37,31 @@ public class ButtonManager : MonoBehaviour {
         {
             if (TacticMovement.state == TacticMovement.turnState.WAIT)
             {
-                animator.SetBool("Close", false);
                 animator.SetBool("isOpen", true);
             }
-            else if (TacticMovement.state == TacticMovement.turnState.CHECKSTATE)
+            else
             {
                 animator.SetBool("isOpen", false);
-                animator.SetBool("Close", true);
+            }
+            if (TacticMovement.state == TacticMovement.turnState.SKILLS && ButtonSkillScript.currentSkill == null)
+            {
+                skillsAnimator.SetBool("SkillsOpen", true);
+            }
+            else
+            {
+                skillsAnimator.SetBool("SkillsOpen", false);
             }
         }
     }
 
-    void Skill(Button button)
+    public void Skill(Button button)
     {
         button.GetComponent<SkillUse>().Use();
     }
     void TaskOnClick()
     {
-        Collider[] colliders = Physics.OverlapBox(TacticMovement.currentPlayer.transform.position - Vector3.up, new Vector3(.2f, .2f, .2f));
-        Tile tile = null;
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            if (colliders[i].gameObject.GetComponent<Tile>() != null)
-            {
-                tile = colliders[i].gameObject.GetComponent<Tile>();
-            }
-        }
-        foreach (Tile t in TacticMovement.selectTiles)
-        {
-            t.Reset();
-        }
-        foreach (Tile t in TacticMovement.attTiles)
-        {
-            t.Reset();
-        }
         TacticMovement.state = TacticMovement.turnState.ATTACKING;
-        tile.CheckAttackTilesMelee(Vector3.forward, 0, tile);
-        tile.CheckAttackTilesMelee(-Vector3.forward, 0, tile);
-        tile.CheckAttackTilesMelee(Vector3.right, 0, tile);
-        tile.CheckAttackTilesMelee(Vector3.left, 0, tile);
+        TacticMovement.currentPlayer.GetComponent<TacticMovement>().FindAttTiles(1);
     }
     void OpenSkillsList()
     {

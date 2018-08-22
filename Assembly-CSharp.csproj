@@ -62,7 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Combat\Alice.cs" />
-    <Compile Include="Assets\Scripts\Combat\AttackButtonBehavior.cs" />
     <Compile Include="Assets\Scripts\Combat\AttackScript.cs" />
     <Compile Include="Assets\Scripts\Combat\BaseStats.cs" />
     <Compile Include="Assets\Scripts\Combat\ButtonManager.cs" />
@@ -75,12 +74,14 @@
     <Compile Include="Assets\Scripts\Combat\Skills_Database\Lena_Skills\Slash.cs" />
     <Compile Include="Assets\Scripts\Combat\Skills_Database\Skills.cs" />
     <Compile Include="Assets\Scripts\Combat\Skills_Database\SkillUse.cs" />
+    <Compile Include="Assets\Scripts\Combat\StatusAfflictions.cs" />
     <Compile Include="Assets\Scripts\GraphicRaycasterRaycasterExample.cs" />
     <Compile Include="Assets\Scripts\Movement\NPCMovement.cs" />
     <Compile Include="Assets\Scripts\Movement\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Movement\TacticMovement.cs" />
     <Compile Include="Assets\Scripts\Movement\Tile.cs" />
     <Compile Include="Assets\Scripts\Movement\TurnManager.cs" />
+    <None Include="Assets\Textures\iso\tiles\readme.txt" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>G:/Projects/ML/Tiles2/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
